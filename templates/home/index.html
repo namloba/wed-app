@@ -1,51 +1,56 @@
-{% extends "layouts/base.html" %}
-{% block title %} IoT Dashboard {% endblock %}
-
+{% extends "layouts/base.html" %} {% block title %} IoT Dashboard {% endblock %}
 {% block stylesheets %}
-<link rel="stylesheet" href="{{ url_for('static', filename='assets/css/control.css') }}">
-{% endblock %}
-
-{% block content %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='assets/css/control.css') }}"
+/>
+{% endblock %} {% block content %}
 <div class="pcoded-main-container">
   <div class="pcoded-content">
     <div class="container">
-
       <!-- Hàng 1 -->
       <div class="row mb-4">
         <div class="col-md-4">
           <div class="card text-center p-3">
-            <div class="icon">💧</div>  <!-- Độ ẩm -->
+            <div class="icon">💧</div>
+            <!-- Độ ẩm -->
             <div class="label">Độ ẩm</div>
             <div class="value" id="doam-value">--</div>
           </div>
         </div>
         <div class="col-md-4">
           <div class="card text-center p-3">
-            <div class="icon">🌡️</div>  <!-- Nhiệt độ -->
+            <div class="icon">🌡️</div>
+            <!-- Nhiệt độ -->
             <div class="label">Nhiệt độ</div>
             <div class="value" id="nhietdo-value">--</div>
           </div>
         </div>
         <div class="col-md-4">
           <div class="card text-center p-3">
-            <div class="icon">☀️</div>  <!-- Ánh sáng -->
+            <div class="icon">☀️</div>
+            <!-- Ánh sáng -->
             <div class="label">Ánh sáng</div>
             <div class="value" id="anh-sang-value">--</div>
           </div>
         </div>
       </div>
 
-      <hr>
+      <hr />
 
       <!-- Hàng 2 -->
       <div class="row">
         <div class="col-md-4">
           <div class="card text-center p-3">
-            <div class="icon">🌀</div>  <!-- Quạt -->
+            <div class="icon">🌀</div>
+            <!-- Quạt -->
             <div class="label">Quạt</div>
             <div class="toggle">
               <label class="switch">
-                <input type="checkbox" onchange="toggleDevice(this, 'Relay1')">
+                <input
+                  type="checkbox"
+                  onchange="toggleDevice(this, 'Relay1')"
+                />
                 <span class="slider"></span>
               </label>
             </div>
@@ -53,11 +58,15 @@
         </div>
         <div class="col-md-4">
           <div class="card text-center p-3">
-            <div class="icon">💡</div>  <!-- Bóng đèn -->
+            <div class="icon">💡</div>
+            <!-- Bóng đèn -->
             <div class="label">Bóng đèn</div>
             <div class="toggle">
               <label class="switch">
-                <input type="checkbox" onchange="toggleDevice(this, 'Relay2')">
+                <input
+                  type="checkbox"
+                  onchange="toggleDevice(this, 'Relay2')"
+                />
                 <span class="slider"></span>
               </label>
             </div>
@@ -65,73 +74,108 @@
         </div>
         <div class="col-md-4">
           <div class="card text-center p-3">
-            <div class="icon">🚰</div>  <!-- Máy bơm nước -->
+            <div class="icon">🚰</div>
+            <!-- Máy bơm nước -->
             <div class="label">Máy bơm nước</div>
             <div class="toggle">
               <label class="switch">
-                <input type="checkbox" onchange="toggleDevice(this, 'Relay3')">
+                <input
+                  type="checkbox"
+                  onchange="toggleDevice(this, 'Relay3')"
+                />
                 <span class="slider"></span>
               </label>
             </div>
           </div>
         </div>
       </div>
-
     </div>
   </div>
 </div>
 
 <!-- JS: Cập nhật dữ liệu cảm biến -->
 <script>
-function fetchValue(resource, elementId, suffix = '') {
-  fetch(`/api/reading?device=Tu-1&resource=${resource}`)
-    .then(res => res.json())
-    .then(data => {
-      if (data && data.value !== undefined) {
-        document.getElementById(elementId).innerText = data.value + suffix;
-      } else {
-        document.getElementById(elementId).innerText = '--';
-      }
-    })
-    .catch(err => {
-      console.error("Fetch error:", err);
-      document.getElementById(elementId).innerText = '--';
+  function fetchValue(resource, elementId, suffix = "") {
+    fetch(`/api/reading?device=Tu-1&resource=${resource}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.value !== undefined) {
+          document.getElementById(elementId).innerText = data.value + suffix;
+        } else {
+          document.getElementById(elementId).innerText = "--";
+        }
+      })
+      .catch((err) => {
+        console.error("Fetch error:", err);
+        document.getElementById(elementId).innerText = "--";
+      });
+  }
+
+  // Thêm hàm fetch trạng thái thiết bị
+  function fetchDeviceStatus() {
+    const devices = ["Relay1", "Relay2", "Relay3"];
+    devices.forEach((device) => {
+      fetch(`/api/device/Tu-1/status/${device}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && data.status !== undefined) {
+            const checkbox = document.querySelector(
+              `input[onchange*="${device}"]`
+            );
+            if (checkbox) {
+              checkbox.checked = data.status === "true" || data.status === true;
+            }
+          }
+        })
+        .catch((err) => {
+          console.error(`Lỗi khi lấy trạng thái ${device}:`, err);
+        });
     });
-}
+  }
 
-function updateAllSensors() {
-  fetchValue('NhietDo', 'nhietdo-value', '°C');
-  fetchValue('DoAm', 'doam-value', '%');
-  fetchValue('AnhSang', 'anh-sang-value');
-}
+  function updateAllSensors() {
+    fetchValue("NhietDo", "nhietdo-value", "°C");
+    fetchValue("DoAm", "doam-value", "%");
+    fetchValue("AnhSang", "anh-sang-value");
+  }
 
-updateAllSensors();
-setInterval(updateAllSensors, 5000);
+  // Cập nhật cả cảm biến và trạng thái thiết bị
+  function updateAll() {
+    updateAllSensors();
+    fetchDeviceStatus();
+  }
+
+  updateAll();
+  setInterval(updateAll, 50000);
 </script>
 
 <!-- JS: Gửi lệnh điều khiển -->
 <script>
-function toggleDevice(checkbox, command) {
-  const state = checkbox.checked ? "true" : "false";
+  function toggleDevice(checkbox, command) {
+    const state = checkbox.checked ? "true" : "false";
 
-  fetch(`/api/device/Tu-1/control/${command}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ state: state })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      console.log(`Đã gửi lệnh ${command} = ${state}`);
-    } else {
-      console.error("Gửi lệnh thất bại:", data);
-    }
-  })
-  .catch(err => {
-    console.error("Lỗi kết nối đến server:", err);
-  });
-}
+    fetch(`/api/device/Tu-1/control/${command}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ state: state }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          console.log(`Đã gửi lệnh ${command} = ${state}`);
+        } else {
+          console.error("Gửi lệnh thất bại:", data);
+          // Khôi phục trạng thái checkbox nếu gửi lệnh thất bại
+          checkbox.checked = !checkbox.checked;
+        }
+      })
+      .catch((err) => {
+        console.error("Lỗi kết nối đến server:", err);
+        // Khôi phục trạng thái checkbox nếu có lỗi
+        checkbox.checked = !checkbox.checked;
+      });
+  }
 </script>
 {% endblock %}

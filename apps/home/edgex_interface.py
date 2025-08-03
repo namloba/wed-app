@@ -1,11 +1,12 @@
 import requests
 import time
+import os
 
 # ==== Base URLs ====
-CORE_METADATA_URL = "http://192.168.164.218:59881"
-CORE_COMMAND_URL  = "http://192.168.164.218:59882"
-CORE_DATA_URL     = "http://192.168.164.218:59880"
-RULE_ENGINE_URL   = "http://192.168.164.218:59720"
+CORE_METADATA_URL = os.getenv('CORE_METADATA_URL', 'http://192.168.164.218:59881')
+CORE_COMMAND_URL  = os.getenv('CORE_COMMAND_URL', 'http://192.168.164.218:59882')
+CORE_DATA_URL     = os.getenv('CORE_DATA_URL', 'http://192.168.164.218:59880')
+RULE_ENGINE_URL   = os.getenv('RULE_ENGINE_URL', 'http://192.168.164.218:59720')
 
 
 # ==== DEVICE & COMMAND ====
